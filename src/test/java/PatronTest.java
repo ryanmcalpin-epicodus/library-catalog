@@ -12,9 +12,37 @@ public class PatronTest {
   @After
   public void tearDown() {
     try (Connection con = DB.sql2o.open()) {
-      String sql = "DELETE FROM name_of_your_table *;";
+      String sql = "DELETE FROM patrons *;";
       con.createQuery(sql).executeUpdate();
     }
+  }
+
+  @Test
+  public void patron_instantiatesCorrectly_true() {
+    Patron patron = new Patron("Jerry");
+    assertTrue(patron instanceof Patron);
+  }
+
+  @Test
+  public void getters_returnsCorrectly_true() {
+    Patron saint = new Patron("Jerry");
+    assertEquals(saint.getName(), "Jerry");
+  }
+
+  @Test
+  public void save_savesToDB_true() {
+    Patron patron = new Patron("Jerry");
+    patron.save();
+    assertTrue(Patron.all().get(0).equals(patron));
+  }
+
+  @Test
+  public void find_returnsById_patron2() {
+    Patron patron = new Patron("Jerry");
+    patron.save();
+    Patron patron2 = new Patron("Cupcake");
+    patron2.save();
+    assertEquals(patron2, Patron.find(patron2.getId()));
   }
 
 }
