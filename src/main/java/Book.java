@@ -1,6 +1,8 @@
 import org.sql2o.*;
 import java.util.List;
 import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Calendar;
 
 public class Book {
   private String title;
@@ -9,6 +11,8 @@ public class Book {
   private int id;
   private int patronId;
   private Timestamp checkedOutDate;
+
+  public static final int MAX_DAYS_CHECKED_OUT = 7;
 
   public Book(String title, String author) {
     this.title = title;
@@ -137,6 +141,17 @@ public class Book {
     }
   }
 
-
+  public boolean isDue() {
+    Timestamp today = new Timestamp(new Date().getTime());
+    Calendar cal = Calendar.getInstance();
+    cal.setTimeInMillis(today.getTime());
+    cal.add(Calendar.DAY_OF_MONTH, Book.MAX_DAYS_CHECKED_OUT);
+    Timestamp dueDate = new Timestamp(cal.getTime().getTime());
+    if (dueDate.before(today)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
 }

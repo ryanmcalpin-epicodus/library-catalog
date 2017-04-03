@@ -93,4 +93,11 @@ public class BookTest {
     assertEquals(DateFormat.getDateTimeInstance().format(rightNow), DateFormat.getDateTimeInstance().format(savedDate));
   }
 
+  @Test
+  public void isDue_checksIfBookIsDue_false() {
+    Book book = new Book("Title", "Author");
+    book.save();
+    assertFalse(Book.find(book.getId()).isDue());
+  }
+
 }
