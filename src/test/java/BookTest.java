@@ -1,6 +1,9 @@
 import org.sql2o.*;
 import org.junit.*;
 import static org.junit.Assert.*;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.text.DateFormat;
 
 public class BookTest {
 
@@ -52,7 +55,7 @@ public class BookTest {
     Book book = new Book("Title", "Author");
     book.save();
     book.updateIsCheckedOut();
-    assertEquals(true, book.getIsCheckedOut());
+    assertEquals(true, Book.find(book.getId()).getIsCheckedOut());
   }
 
   @Test
@@ -60,7 +63,7 @@ public class BookTest {
     Book book = new Book("Title", "Author");
     book.save();
     book.deleteBook();
-    assertEquals(null, book.find(book.getId()));
+    assertEquals(null, Book.find(book.getId()));
   }
 
   @Test
@@ -79,6 +82,15 @@ public class BookTest {
     Book book2 = new Book("Fresh", "Me");
     book2.save();
     assertEquals(book2, Book.findByAuthor(book2.getAuthor()));
+  }
+
+  @Test
+  public void getCheckOutDate_returnsDate_true() {
+    Book book = new Book("Title", "Jerry");
+    book.save();
+    Timestamp savedDate = Book.find(book.getId()).getCheckedOutDate();
+    Timestamp rightNow = new Timestamp(new Date().getTime());
+    assertEquals(DateFormat.getDateTimeInstance().format(rightNow), DateFormat.getDateTimeInstance().format(savedDate));
   }
 
 }

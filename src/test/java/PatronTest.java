@@ -1,6 +1,8 @@
 import org.sql2o.*;
 import org.junit.*;
 import static org.junit.Assert.*;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class PatronTest {
 
@@ -44,5 +46,35 @@ public class PatronTest {
     patron2.save();
     assertEquals(patron2, Patron.find(patron2.getId()));
   }
+
+  @Test
+  public void checkOut_checksBookOutToPatron_true() {
+    Book book = new Book("Title", "Author");
+    book.save();
+    Patron patron = new Patron("Jerry");
+    patron.save();
+    patron.checkOut(book.getId());
+    assertTrue(Book.find(book.getId()).getIsCheckedOut());
+    assertEquals(patron.getId(), Book.find(book.getId()).getPatronId());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void atMaxBooks_recognizesIfPatronHasCheckedOutMaxBooks_true() {
+    Patron patron = new Patron("Jerry");
+    for(int i = 0; i <= Patron.MAX_BOOKS; i++) {
+      Book book = new Book("Title", "Author");
+      book.save();
+      patron.checkOut(book.getId());
+    }
+    assertEquals(true, patron.atMaxBooks());
+  }
+
+
+
+  // @Test
+  // public void dude date is two weeks past checkOut
+  //   new book
+  //   var = book timestamp + two weeks
+  //   assert equal(book past due date)
 
 }

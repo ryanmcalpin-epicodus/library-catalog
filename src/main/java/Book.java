@@ -1,12 +1,14 @@
 import org.sql2o.*;
 import java.util.List;
+import java.sql.Timestamp;
 
 public class Book {
   private String title;
   private String author;
   private boolean isCheckedOut;
   private int id;
-  // private int patronId;
+  private int patronId;
+  private Timestamp checkedOutDate;
 
   public Book(String title, String author) {
     this.title = title;
@@ -30,9 +32,17 @@ public class Book {
     return this.id;
   }
 
+  public int getPatronId() {
+    return this.patronId;
+  }
+
+  public Timestamp getCheckedOutDate() {
+    return this.checkedOutDate;
+  }
+
   public void save() {
     try(Connection con = DB.sql2o.open()) {
-      String sql = "INSERT INTO books (title, author, is_checked_out) VALUES (:title, :author, :is_checked_out)";
+      String sql = "INSERT INTO books (title, author, is_checked_out, checked_out_date) VALUES (:title, :author, :is_checked_out, now())";
       this.id = (int) con.createQuery(sql, true)
         .addParameter("title", this.title)
         .addParameter("author", this.author)
@@ -47,6 +57,8 @@ public class Book {
       String sql = "SELECT * FROM books";
       return con.createQuery(sql)
         .addColumnMapping("is_checked_out", "isCheckedOut")
+        .addColumnMapping("patron_id", "patronId")
+        .addColumnMapping("checked_out_date", "checkedOutDate")
         .executeAndFetch(Book.class);
     }
   }
@@ -67,17 +79,27 @@ public class Book {
       Book book = con.createQuery(sql)
         .addParameter("id", id)
         .addColumnMapping("is_checked_out", "isCheckedOut")
+        .addColumnMapping("patron_id", "patronId")
+        .addColumnMapping("checked_out_date", "checkedOutDate")
         .executeAndFetchFirst(Book.class);
       return book;
     }
   }
 
   public void updateIsCheckedOut() {
-    if (this.isCheckedOut) {
-      this.isCheckedOut = false;
+    Book book = Book.find(this.getId());
+    if (book.isCheckedOut) {
+      book.isCheckedOut = false;
     } else {
-      this.isCheckedOut = true;
+      book.isCheckedOut = true;
     }
+    try(Connection con = DB.sql2o.open()) {
+      String sql = "UPDATE books SET is_checked_out = :bool";
+      con.createQuery(sql)
+        .addParameter("bool", book.isCheckedOut)
+        .executeUpdate();
+    }
+
   }
 
   public void deleteBook() {
@@ -95,6 +117,8 @@ public class Book {
       Book book = con.createQuery(sql)
         .addParameter("title", title)
         .addColumnMapping("is_checked_out", "isCheckedOut")
+        .addColumnMapping("patron_id", "patronId")
+        .addColumnMapping("checked_out_date", "checkedOutDate")
         .executeAndFetchFirst(Book.class);
       return book;
     }
@@ -106,8 +130,13 @@ public class Book {
       Book book = con.createQuery(sql)
         .addParameter("author", author)
         .addColumnMapping("is_checked_out", "isCheckedOut")
+        .addColumnMapping("patron_id", "patronId")
+        .addColumnMapping("checked_out_date", "checkedOutDate")
         .executeAndFetchFirst(Book.class);
       return book;
     }
   }
+
+
+
 }
